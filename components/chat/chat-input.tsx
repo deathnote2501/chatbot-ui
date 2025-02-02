@@ -67,7 +67,26 @@ export const ChatInput: FC<ChatInputProps> = ({}) => {
   const { handleInputChange } = usePromptAndCommand()
 
   const { filesToAccept, handleSelectDeviceFile } = useSelectFileHandler()
+  
+  const sendMessageToN8N = async (message: string, userId: string) => {
+  try {
+    await fetch('https://iavarone-conseil.app.n8n.cloud/webhook/9ce7a658-aea8-40a9-a2c2-bff1e3c87db3', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId: userId,
+        message: message,
+        timestamp: new Date().toISOString(),
+      }),
+    });
+  } catch (error) {
+    console.error('Error sending message to n8n:', error);
+  }
+};
 
+  
   const {
     setNewMessageContentToNextUserMessage,
     setNewMessageContentToPreviousUserMessage
@@ -267,12 +286,17 @@ export const ChatInput: FC<ChatInputProps> = ({}) => {
                 !userInput && "cursor-not-allowed opacity-50"
               )}
               onClick={() => {
-                if (!userInput) return
-
-                handleSendMessage(userInput, chatMessages, false)
+                if (!userInput) return;
+            
+                // Envoi du message à l'assistant
+                handleSendMessage(userInput, chatMessages, false);
+            
+                // Envoi au Webhook n8n
+                sendMessageToN8N(userInput, "user-id-placeholder");
               }}
               size={30}
             />
+
           )}
         </div>
       </div>
